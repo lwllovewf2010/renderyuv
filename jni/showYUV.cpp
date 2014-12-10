@@ -2,7 +2,7 @@
 #include <android_runtime/AndroidRuntime.h>
 #include <android/native_window_jni.h>
 #include <android/native_window.h>
-//#include <media/stagefright/foundation/ADebug.h>  
+#include <media/stagefright/foundation/ADebug.h>  
 #include <android_runtime/android_view_Surface.h>
 #include <gui/Surface.h>
 #include <assert.h>
@@ -19,7 +19,7 @@ static int ALIGN(int x, int y) {
     return (x + y - 1) & ~(y - 1);  
 } 
 
-#define CHECK_EQ 
+//#define CHECK_EQ 
   
 static void render(  
         const void *data, size_t size, const sp<ANativeWindow> &nativeWindow,int width,int height) {  
