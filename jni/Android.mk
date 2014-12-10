@@ -13,32 +13,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/frameworks/base/include \
 
 LOCAL_LDLIBS += -L$(LOCAL_PATH)/lib -ljnigraphics -lEGL -lGLESv2 -landroid -landroid_runtime -landroidfw -lbinder -lcutils -lexpat -lgui -lmedia -lnativehelper -lskia -lsqlite -lstlport -lui -lutils -llog -lOpenSLES
 
+LOCAL_CFLAGS += -DHAVE_PTHREADS
 
-
-LOCAL_SHARED_LIBRARIES := \
-libEGL \
-             libandroid \
-         libandroidfw \
-       libcutils \
-          libgui \
-             libnativehelper \
-    libsqlite \
-          libui \
-libGLESv2 \
-          libandroid_runtime \
- libbinder \
-          libexpat \
-           libmedia \
-           libskia \
-            libstlport \
-         libutils \
-    libcutils \
-    libutils \
-    libbinder \
-        libui \
-            libgui \
-                libandroid_runtime \
-                    libstagefright_foundation  
 
 LOCAL_MODULE:= libshowYUV  
 
