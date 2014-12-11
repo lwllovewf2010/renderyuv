@@ -119,7 +119,7 @@ static JNINativeMethod gMethods[] = {
     {"nativeShowYUV",               "([BII)V",                          (void *)nativeShowYUV},  
 };  
   
-static const char* const kClassPathName = "com/example/myyuvviewer/MainActivity";  
+static const char* const kClassPathName = "com/example/hello_jni/MainActivity";
   
 // This function only registers the native methods  
 static int register_com_example_myyuvviewer(JNIEnv *env)  

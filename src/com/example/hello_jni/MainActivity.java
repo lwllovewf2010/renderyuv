@@ -14,9 +14,9 @@ import android.view.SurfaceView;
 public class MainActivity extends Activity {  
   
     final private String TAG = "MyYUVViewer";  
-    final private String FILE_NAME = "yuv_320_240.yuv";  
-    private int width = 320;  
-    private int height = 240;  
+    final private String FILE_NAME = "bali_640x360_YUY2.yuv";  
+    private int width = 640;  
+    private int height = 360;  
     private int size = width * height * 3/2;  
       
     @Override  

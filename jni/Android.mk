@@ -11,7 +11,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/include/frameworks/base/include \
 	$(LOCAL_PATH)/include/frameworks/av/include \
 
 
-LOCAL_LDLIBS += -L$(LOCAL_PATH)/lib -ljnigraphics -lEGL -lGLESv2 -landroid -landroid_runtime -landroidfw -lbinder -lcutils -lexpat -lgui -lmedia -lnativehelper -lskia -lsqlite -lstlport -lui -lutils -llog -lOpenSLES
+LOCAL_LDLIBS += -L$(LOCAL_PATH)/lib -ljnigraphics -lEGL -lGLESv2 -landroid -landroid_runtime -lbinder -lcutils -lexpat -lgui -lmedia -lnativehelper -lskia -lsqlite -lstlport -lui -lutils -llog -lOpenSLES
 
 LOCAL_CFLAGS += -DHAVE_PTHREADS
 
