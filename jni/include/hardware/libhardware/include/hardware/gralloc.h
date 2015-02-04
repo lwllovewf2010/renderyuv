@@ -19,7 +19,6 @@
 #define ANDROID_GRALLOC_INTERFACE_H
 
 #include <system/window.h>
-#include <system/graphics.h>
 #include <hardware/hardware.h>
 
 #include <stdint.h>
@@ -33,23 +32,7 @@
 
 __BEGIN_DECLS
 
-/**
- * Module versioning information for the Gralloc hardware module, based on
- * gralloc_module_t.common.module_api_version.
- *
- * Version History:
- *
- * GRALLOC_MODULE_API_VERSION_0_1:
- * Initial Gralloc hardware module API.
- *
- * GRALLOC_MODULE_API_VERSION_0_2:
- * Add support for flexible YCbCr format with (*lock_ycbcr)() method.
- */
-
-#define GRALLOC_MODULE_API_VERSION_0_1  HARDWARE_MODULE_API_VERSION(0, 1)
-#define GRALLOC_MODULE_API_VERSION_0_2  HARDWARE_MODULE_API_VERSION(0, 2)
-
-#define GRALLOC_DEVICE_API_VERSION_0_1  HARDWARE_DEVICE_API_VERSION(0, 1)
+#define GRALLOC_API_VERSION 1
 
 /**
  * The id of this module
@@ -74,9 +57,9 @@ enum {
     
     /* buffer is never written in software */
     GRALLOC_USAGE_SW_WRITE_NEVER        = 0x00000000,
-    /* buffer is rarely written in software */
+    /* buffer is never written in software */
     GRALLOC_USAGE_SW_WRITE_RARELY       = 0x00000020,
-    /* buffer is often written in software */
+    /* buffer is never written in software */
     GRALLOC_USAGE_SW_WRITE_OFTEN        = 0x00000030,
     /* mask for the software write values */
     GRALLOC_USAGE_SW_WRITE_MASK         = 0x000000F0,
@@ -93,16 +76,8 @@ enum {
     GRALLOC_USAGE_HW_FB                 = 0x00001000,
     /* buffer will be used with the HW video encoder */
     GRALLOC_USAGE_HW_VIDEO_ENCODER      = 0x00010000,
-    /* buffer will be written by the HW camera pipeline */
-    GRALLOC_USAGE_HW_CAMERA_WRITE       = 0x00020000,
-    /* buffer will be read by the HW camera pipeline */
-    GRALLOC_USAGE_HW_CAMERA_READ        = 0x00040000,
-    /* buffer will be used as part of zero-shutter-lag queue */
-    GRALLOC_USAGE_HW_CAMERA_ZSL         = 0x00060000,
-    /* mask for the camera access values */
-    GRALLOC_USAGE_HW_CAMERA_MASK        = 0x00060000,
     /* mask for the software usage bit-mask */
-    GRALLOC_USAGE_HW_MASK               = 0x00071F00,
+    GRALLOC_USAGE_HW_MASK               = 0x00011F00,
 
     /* buffer should be displayed full-screen on an external display when
      * possible
@@ -182,10 +157,6 @@ typedef struct gralloc_module_t {
      * If usage specifies GRALLOC_USAGE_SW_*, vaddr is filled with the address
      * of the buffer in virtual memory.
      *
-     * Note calling (*lock)() on HAL_PIXEL_FORMAT_YCbCr_*_888 buffers will fail
-     * and return -EINVAL.  These buffers must be locked with (*lock_ycbcr)()
-     * instead.
-     *
      * THREADING CONSIDERATIONS:
      *
      * It is legal for several different threads to lock a buffer from 
@@ -222,24 +193,8 @@ typedef struct gralloc_module_t {
     int (*perform)(struct gralloc_module_t const* module,
             int operation, ... );
 
-    /*
-     * The (*lock_ycbcr)() method is like the (*lock)() method, with the
-     * difference that it fills a struct ycbcr with a description of the buffer
-     * layout, and zeroes out the reserved fields.
-     *
-     * This will only work on buffers with HAL_PIXEL_FORMAT_YCbCr_*_888, and
-     * will return -EINVAL on any other buffer formats.
-     *
-     * Added in GRALLOC_MODULE_API_VERSION_0_2.
-     */
-
-    int (*lock_ycbcr)(struct gralloc_module_t const* module,
-            buffer_handle_t handle, int usage,
-            int l, int t, int w, int h,
-            struct android_ycbcr *ycbcr);
-
     /* reserved for future use */
-    void* reserved_proc[6];
+    void* reserved_proc[7];
 } gralloc_module_t;
 
 /*****************************************************************************/
@@ -258,10 +213,6 @@ typedef struct alloc_device_t {
      * allow the implementation to satisfy hardware constraints on the width
      * of a pixmap (eg: it may have to be multiple of 8 pixels). 
      * The CALLER TAKES OWNERSHIP of the buffer_handle_t.
-     *
-     * If format is HAL_PIXEL_FORMAT_YCbCr_420_888, the returned stride must be
-     * 0, since the actual strides are available from the android_ycbcr
-     * structure.
      * 
      * Returns 0 on success or -errno on error.
      */
@@ -307,4 +258,4 @@ static inline int gralloc_close(struct alloc_device_t* device) {
 
 __END_DECLS
 
-#endif  // ANDROID_GRALLOC_INTERFACE_H
+#endif  // ANDROID_ALLOC_INTERFACE_H

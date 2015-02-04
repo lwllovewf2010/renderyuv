@@ -66,17 +66,19 @@ public:
     //
 
     // indicate a change in device connection status
-    virtual status_t setDeviceConnectionState(audio_devices_t device,
+    virtual status_t setDeviceConnectionState(AudioSystem::audio_devices device,
                                           AudioSystem::device_connection_state state,
                                           const char *device_address) = 0;
-    // retrieve a device connection status
-    virtual AudioSystem::device_connection_state getDeviceConnectionState(audio_devices_t device,
+    // retreive a device connection status
+    virtual AudioSystem::device_connection_state getDeviceConnectionState(AudioSystem::audio_devices device,
                                                                           const char *device_address) = 0;
     // indicate a change in phone state. Valid phones states are defined by AudioSystem::audio_mode
     virtual void setPhoneState(int state) = 0;
+    // indicate a change in ringer mode
+    virtual void setRingerMode(uint32_t mode, uint32_t mask) = 0;
     // force using a specific device category for the specified usage
     virtual void setForceUse(AudioSystem::force_use usage, AudioSystem::forced_config config) = 0;
-    // retrieve current device category forced for a given usage
+    // retreive current device category forced for a given usage
     virtual AudioSystem::forced_config getForceUse(AudioSystem::force_use usage) = 0;
     // set a system property (e.g. camera sound always audible)
     virtual void setSystemProperty(const char* property, const char* value) = 0;
@@ -87,7 +89,7 @@ public:
     // Audio routing query functions
     //
 
-    // request an output appropriate for playback of the supplied stream type and parameters
+    // request an output appriate for playback of the supplied stream type and parameters
     virtual audio_io_handle_t getOutput(AudioSystem::stream_type stream,
                                         uint32_t samplingRate = 0,
                                         uint32_t format = AudioSystem::FORMAT_DEFAULT,
@@ -104,7 +106,7 @@ public:
     // releases the output.
     virtual void releaseOutput(audio_io_handle_t output) = 0;
 
-    // request an input appropriate for record from the supplied device with supplied parameters.
+    // request an input appriate for record from the supplied device with supplied parameters.
     virtual audio_io_handle_t getInput(int inputSource,
                                     uint32_t samplingRate = 0,
                                     uint32_t Format = AudioSystem::FORMAT_DEFAULT,
@@ -126,29 +128,20 @@ public:
                                       int indexMin,
                                       int indexMax) = 0;
 
-    // sets the new stream volume at a level corresponding to the supplied index for the
-    // supplied device. By convention, specifying AUDIO_DEVICE_OUT_DEFAULT means
-    // setting volume for all devices
-    virtual status_t setStreamVolumeIndex(AudioSystem::stream_type stream,
-                                          int index,
-                                          audio_devices_t device) = 0;
-
-    // retrieve current volume index for the specified stream and the
-    // specified device. By convention, specifying AUDIO_DEVICE_OUT_DEFAULT means
-    // querying the volume of the active device.
-    virtual status_t getStreamVolumeIndex(AudioSystem::stream_type stream,
-                                          int *index,
-                                          audio_devices_t device) = 0;
+    // sets the new stream volume at a level corresponding to the supplied index
+    virtual status_t setStreamVolumeIndex(AudioSystem::stream_type stream, int index) = 0;
+    // retreive current volume index for the specified stream
+    virtual status_t getStreamVolumeIndex(AudioSystem::stream_type stream, int *index) = 0;
 
     // return the strategy corresponding to a given stream type
     virtual uint32_t getStrategyForStream(AudioSystem::stream_type stream) = 0;
 
     // return the enabled output devices for the given stream type
-    virtual audio_devices_t getDevicesForStream(AudioSystem::stream_type stream) = 0;
+    virtual uint32_t getDevicesForStream(AudioSystem::stream_type stream) = 0;
 
     // Audio effect management
-    virtual audio_io_handle_t getOutputForEffect(const effect_descriptor_t *desc) = 0;
-    virtual status_t registerEffect(const effect_descriptor_t *desc,
+    virtual audio_io_handle_t getOutputForEffect(effect_descriptor_t *desc) = 0;
+    virtual status_t registerEffect(effect_descriptor_t *desc,
                                     audio_io_handle_t io,
                                     uint32_t strategy,
                                     int session,
@@ -157,8 +150,6 @@ public:
     virtual status_t setEffectEnabled(int id, bool enabled) = 0;
 
     virtual bool isStreamActive(int stream, uint32_t inPastMs = 0) const = 0;
-    virtual bool isStreamActiveRemotely(int stream, uint32_t inPastMs = 0) const = 0;
-    virtual bool isSourceActive(audio_source_t source) const = 0;
 
     //dump state
     virtual status_t    dump(int fd) = 0;
@@ -172,13 +163,6 @@ public:
     virtual ~AudioPolicyClientInterface() {}
 
     //
-    // Audio HW module functions
-    //
-
-    // loads a HW module.
-    virtual audio_module_handle_t loadHwModule(const char *name) = 0;
-
-    //
     // Audio output Control functions
     //
 
@@ -186,13 +170,12 @@ public:
     // in case the audio policy manager has no specific requirements for the output being opened.
     // When the function returns, the parameter values reflect the actual values used by the audio hardware output stream.
     // The audio policy manager can check if the proposed parameters are suitable or not and act accordingly.
-    virtual audio_io_handle_t openOutput(audio_module_handle_t module,
-                                         audio_devices_t *pDevices,
-                                         uint32_t *pSamplingRate,
-                                         audio_format_t *pFormat,
-                                         audio_channel_mask_t *pChannelMask,
-                                         uint32_t *pLatencyMs,
-                                         audio_output_flags_t flags) = 0;
+    virtual audio_io_handle_t openOutput(uint32_t *pDevices,
+                                    uint32_t *pSamplingRate,
+                                    uint32_t *pFormat,
+                                    uint32_t *pChannels,
+                                    uint32_t *pLatencyMs,
+                                    AudioSystem::output_flags flags) = 0;
     // creates a special output that is duplicated to the two outputs passed as arguments. The duplication is performed by
     // a special mixer thread in the AudioFlinger.
     virtual audio_io_handle_t openDuplicateOutput(audio_io_handle_t output1, audio_io_handle_t output2) = 0;
@@ -209,11 +192,11 @@ public:
     //
 
     // opens an audio input
-    virtual audio_io_handle_t openInput(audio_module_handle_t module,
-                                        audio_devices_t *pDevices,
-                                        uint32_t *pSamplingRate,
-                                        audio_format_t *pFormat,
-                                        audio_channel_mask_t *pChannelMask) = 0;
+    virtual audio_io_handle_t openInput(uint32_t *pDevices,
+                                    uint32_t *pSamplingRate,
+                                    uint32_t *pFormat,
+                                    uint32_t *pChannels,
+                                    uint32_t acoustics) = 0;
     // closes an audio input
     virtual status_t closeInput(audio_io_handle_t input) = 0;
     //
@@ -224,7 +207,6 @@ public:
     // for each output (destination device) it is attached to.
     virtual status_t setStreamVolume(AudioSystem::stream_type stream, float volume, audio_io_handle_t output, int delayMs = 0) = 0;
 
-    // FIXME ignores output, should be renamed to invalidateStreamOuput(stream)
     // reroute a given stream type to the specified output
     virtual status_t setStreamOutput(AudioSystem::stream_type stream, audio_io_handle_t output) = 0;
 

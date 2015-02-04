@@ -56,7 +56,7 @@ public:
     virtual size_t      bufferSize() const = 0;
 
     /**
-     * returns the output channel mask
+     * returns the output channel nask
      */
     virtual uint32_t    channels() const = 0;
 
@@ -109,13 +109,6 @@ public:
     // return the number of audio frames written by the audio dsp to DAC since
     // the output has exited standby
     virtual status_t    getRenderPosition(uint32_t *dspFrames) = 0;
-
-    /**
-     * get the local time at which the next write to the audio driver will be
-     * presented
-     */
-    virtual status_t    getNextWriteTimestamp(int64_t *timestamp);
-
 };
 
 /**
@@ -173,7 +166,7 @@ public:
     virtual String8     getParameters(const String8& keys) = 0;
 
 
-    // Return the number of input frames lost in the audio driver since the last call of this function.
+    // Return the amount of input frames lost in the audio driver since the last call of this function.
     // Audio driver is expected to reset the value to 0 and restart counting upon returning the current value by this function call.
     // Such loss typically occurs when the user space process is blocked longer than the capacity of audio driver buffers.
     // Unit: the number of input audio frames
@@ -217,14 +210,6 @@ public:
     virtual status_t    setMasterVolume(float volume) = 0;
 
     /**
-     * Get the current master volume value for the HAL, if the HAL supports
-     * master volume control.  AudioFlinger will query this value from the
-     * primary audio HAL when the service starts and use the value for setting
-     * the initial master volume across all HALs.
-     */
-    virtual status_t    getMasterVolume(float *volume) = 0;
-
-    /**
      * setMode is called when the audio mode changes. NORMAL mode is for
      * standard audio playback, RINGTONE when a ringtone is playing, and IN_CALL
      * when a call is in progress.
@@ -251,7 +236,6 @@ public:
                                 uint32_t *sampleRate=0,
                                 status_t *status=0) = 0;
     virtual    void        closeOutputStream(AudioStreamOut* out) = 0;
-
     /** This method creates and opens the audio hardware input stream */
     virtual AudioStreamIn* openInputStream(
                                 uint32_t devices,

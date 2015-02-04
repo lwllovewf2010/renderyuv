@@ -41,33 +41,6 @@ __BEGIN_DECLS
  */
 #define AUDIO_HARDWARE_INTERFACE "audio_hw_if"
 
-
-/* Use version 0.1 to be compatible with first generation of audio hw module with version_major
- * hardcoded to 1. No audio module API change.
- */
-#define AUDIO_MODULE_API_VERSION_0_1 HARDWARE_MODULE_API_VERSION(0, 1)
-#define AUDIO_MODULE_API_VERSION_CURRENT AUDIO_MODULE_API_VERSION_0_1
-
-/* First generation of audio devices had version hardcoded to 0. all devices with versions < 1.0
- * will be considered of first generation API.
- */
-#define AUDIO_DEVICE_API_VERSION_0_0 HARDWARE_DEVICE_API_VERSION(0, 0)
-#define AUDIO_DEVICE_API_VERSION_1_0 HARDWARE_DEVICE_API_VERSION(1, 0)
-#define AUDIO_DEVICE_API_VERSION_2_0 HARDWARE_DEVICE_API_VERSION(2, 0)
-#define AUDIO_DEVICE_API_VERSION_CURRENT AUDIO_DEVICE_API_VERSION_2_0
-
-/**
- * List of known audio HAL modules. This is the base name of the audio HAL
- * library composed of the "audio." prefix, one of the base names below and
- * a suffix specific to the device.
- * e.g: audio.primary.goldfish.so or audio.a2dp.default.so
- */
-
-#define AUDIO_HARDWARE_MODULE_ID_PRIMARY "primary"
-#define AUDIO_HARDWARE_MODULE_ID_A2DP "a2dp"
-#define AUDIO_HARDWARE_MODULE_ID_USB "usb"
-#define AUDIO_HARDWARE_MODULE_ID_REMOTE_SUBMIX "r_submix"
-
 /**************************************/
 
 /**
@@ -90,50 +63,23 @@ __BEGIN_DECLS
 #define AUDIO_PARAMETER_VALUE_TTY_HCO "tty_hco"
 #define AUDIO_PARAMETER_VALUE_TTY_FULL "tty_full"
 
-/* A2DP sink address set by framework */
-#define AUDIO_PARAMETER_A2DP_SINK_ADDRESS "a2dp_sink_address"
-
-/* Screen state */
-#define AUDIO_PARAMETER_KEY_SCREEN_STATE "screen_state"
-
 /**
  *  audio stream parameters
  */
 
-#define AUDIO_PARAMETER_STREAM_ROUTING "routing"            // audio_devices_t
-#define AUDIO_PARAMETER_STREAM_FORMAT "format"              // audio_format_t
-#define AUDIO_PARAMETER_STREAM_CHANNELS "channels"          // audio_channel_mask_t
-#define AUDIO_PARAMETER_STREAM_FRAME_COUNT "frame_count"    // size_t
-#define AUDIO_PARAMETER_STREAM_INPUT_SOURCE "input_source"  // audio_source_t
-#define AUDIO_PARAMETER_STREAM_SAMPLING_RATE "sampling_rate" // uint32_t
-
-/* Query supported formats. The response is a '|' separated list of strings from
- * audio_format_t enum e.g: "sup_formats=AUDIO_FORMAT_PCM_16_BIT" */
-#define AUDIO_PARAMETER_STREAM_SUP_FORMATS "sup_formats"
-/* Query supported channel masks. The response is a '|' separated list of strings from
- * audio_channel_mask_t enum e.g: "sup_channels=AUDIO_CHANNEL_OUT_STEREO|AUDIO_CHANNEL_OUT_MONO" */
-#define AUDIO_PARAMETER_STREAM_SUP_CHANNELS "sup_channels"
-/* Query supported sampling rates. The response is a '|' separated list of integer values e.g:
- * "sup_sampling_rates=44100|48000" */
-#define AUDIO_PARAMETER_STREAM_SUP_SAMPLING_RATES "sup_sampling_rates"
-
+#define AUDIO_PARAMETER_STREAM_ROUTING "routing"
+#define AUDIO_PARAMETER_STREAM_FORMAT "format"
+#define AUDIO_PARAMETER_STREAM_CHANNELS "channels"
+#define AUDIO_PARAMETER_STREAM_FRAME_COUNT "frame_count"
+#define AUDIO_PARAMETER_STREAM_INPUT_SOURCE "input_source"
 
 /**************************************/
-
-/* common audio stream configuration parameters */
-struct audio_config {
-    uint32_t sample_rate;
-    audio_channel_mask_t channel_mask;
-    audio_format_t  format;
-};
-
-typedef struct audio_config audio_config_t;
 
 /* common audio stream parameters and operations */
 struct audio_stream {
 
     /**
-     * Return the sampling rate in Hz - eg. 44100.
+     * sampling rate is in Hz - eg. 44100
      */
     uint32_t (*get_sample_rate)(const struct audio_stream *stream);
 
@@ -143,30 +89,28 @@ struct audio_stream {
     int (*set_sample_rate)(struct audio_stream *stream, uint32_t rate);
 
     /**
-     * Return size of input/output buffer in bytes for this stream - eg. 4800.
-     * It should be a multiple of the frame size.  See also get_input_buffer_size.
+     * size of output buffer in bytes - eg. 4800
      */
     size_t (*get_buffer_size)(const struct audio_stream *stream);
 
     /**
-     * Return the channel mask -
+     * the channel mask -
      *  e.g. AUDIO_CHANNEL_OUT_STEREO or AUDIO_CHANNEL_IN_STEREO
      */
-    audio_channel_mask_t (*get_channels)(const struct audio_stream *stream);
+    uint32_t (*get_channels)(const struct audio_stream *stream);
 
     /**
-     * Return the audio format - e.g. AUDIO_FORMAT_PCM_16_BIT
+     * audio format - eg. AUDIO_FORMAT_PCM_16_BIT
      */
-    audio_format_t (*get_format)(const struct audio_stream *stream);
+    int (*get_format)(const struct audio_stream *stream);
 
     /* currently unused - use set_parameters with key
      *     AUDIO_PARAMETER_STREAM_FORMAT
      */
-    int (*set_format)(struct audio_stream *stream, audio_format_t format);
+    int (*set_format)(struct audio_stream *stream, int format);
 
     /**
      * Put the audio hardware input/output into standby mode.
-     * Driver should exit from standby mode at the next I/O operation.
      * Returns 0 on success and <0 on failure.
      */
     int (*standby)(struct audio_stream *stream);
@@ -174,15 +118,7 @@ struct audio_stream {
     /** dump the state of the audio input/output device */
     int (*dump)(const struct audio_stream *stream, int fd);
 
-    /** Return the set of device(s) which this stream is connected to */
     audio_devices_t (*get_device)(const struct audio_stream *stream);
-
-    /**
-     * Currently unused - set_device() corresponds to set_parameters() with key
-     * AUDIO_PARAMETER_STREAM_ROUTING for both input and output.
-     * AUDIO_PARAMETER_STREAM_INPUT_SOURCE is an additional information used by
-     * input streams only.
-     */
     int (*set_device)(struct audio_stream *stream, audio_devices_t device);
 
     /**
@@ -202,7 +138,7 @@ struct audio_stream {
 
     /*
      * Returns a pointer to a heap allocated string. The caller is responsible
-     * for freeing the memory for it using free().
+     * for freeing the memory for it.
      */
     char * (*get_parameters)(const struct audio_stream *stream,
                              const char *keys);
@@ -224,7 +160,7 @@ struct audio_stream_out {
     struct audio_stream common;
 
     /**
-     * Return the audio hardware driver estimated latency in milliseconds.
+     * return the audio hardware driver latency in milli seconds.
      */
     uint32_t (*get_latency)(const struct audio_stream_out *stream);
 
@@ -238,10 +174,7 @@ struct audio_stream_out {
     int (*set_volume)(struct audio_stream_out *stream, float left, float right);
 
     /**
-     * Write audio buffer to driver. Returns number of bytes written, or a
-     * negative status_t. If at least one frame was written successfully prior to the error,
-     * it is suggested that the driver return that successful (short) byte count
-     * and then return an error in the subsequent call.
+     * write audio buffer to driver. Returns number of bytes written
      */
     ssize_t (*write)(struct audio_stream_out *stream, const void* buffer,
                      size_t bytes);
@@ -251,14 +184,6 @@ struct audio_stream_out {
      */
     int (*get_render_position)(const struct audio_stream_out *stream,
                                uint32_t *dsp_frames);
-
-    /**
-     * get the local time at which the next write to the audio driver will be presented.
-     * The units are microseconds, where the epoch is decided by the local audio HAL.
-     */
-    int (*get_next_write_timestamp)(const struct audio_stream_out *stream,
-                                    int64_t *timestamp);
-
 };
 typedef struct audio_stream_out audio_stream_out_t;
 
@@ -269,10 +194,7 @@ struct audio_stream_in {
      *  for future use */
     int (*set_gain)(struct audio_stream_in *stream, float gain);
 
-    /** Read audio buffer in from audio driver. Returns number of bytes read, or a
-     *  negative status_t. If at least one frame was read prior to the error,
-     *  read should return that byte count and then return an error in the subsequent call.
-     */
+    /** read audio buffer in from audio driver */
     ssize_t (*read)(struct audio_stream_in *stream, void* buffer,
                     size_t bytes);
 
@@ -293,9 +215,9 @@ typedef struct audio_stream_in audio_stream_in_t;
 /**
  * return the frame size (number of bytes per sample).
  */
-static inline size_t audio_stream_frame_size(const struct audio_stream *s)
+static inline uint32_t audio_stream_frame_size(struct audio_stream *s)
 {
-    size_t chan_samp_sz;
+    int chan_samp_sz;
 
     switch (s->get_format(s)) {
     case AUDIO_FORMAT_PCM_16_BIT:
@@ -330,12 +252,6 @@ struct audio_hw_device {
      * each audio_hw_device implementation.
      *
      * Return value is a bitmask of 1 or more values of audio_devices_t
-     *
-     * NOTE: audio HAL implementations starting with
-     * AUDIO_DEVICE_API_VERSION_2_0 do not implement this function.
-     * All supported devices should be listed in audio_policy.conf
-     * file and the audio policy manager must choose the appropriate
-     * audio module based on information in this file.
      */
     uint32_t (*get_supported_devices)(const struct audio_hw_device *dev);
 
@@ -356,20 +272,11 @@ struct audio_hw_device {
     int (*set_master_volume)(struct audio_hw_device *dev, float volume);
 
     /**
-     * Get the current master volume value for the HAL, if the HAL supports
-     * master volume control.  AudioFlinger will query this value from the
-     * primary audio HAL when the service starts and use the value for setting
-     * the initial master volume across all HALs.  HALs which do not support
-     * this method may leave it set to NULL.
-     */
-    int (*get_master_volume)(struct audio_hw_device *dev, float *volume);
-
-    /**
-     * set_mode is called when the audio mode changes. AUDIO_MODE_NORMAL mode
+     * setMode is called when the audio mode changes. AUDIO_MODE_NORMAL mode
      * is for standard audio playback, AUDIO_MODE_RINGTONE when a ringtone is
      * playing, and AUDIO_MODE_IN_CALL when a call is in progress.
      */
-    int (*set_mode)(struct audio_hw_device *dev, audio_mode_t mode);
+    int (*set_mode)(struct audio_hw_device *dev, int mode);
 
     /* mic mute */
     int (*set_mic_mute)(struct audio_hw_device *dev, bool state);
@@ -380,56 +287,39 @@ struct audio_hw_device {
 
     /*
      * Returns a pointer to a heap allocated string. The caller is responsible
-     * for freeing the memory for it using free().
+     * for freeing the memory for it.
      */
     char * (*get_parameters)(const struct audio_hw_device *dev,
                              const char *keys);
 
     /* Returns audio input buffer size according to parameters passed or
-     * 0 if one of the parameters is not supported.
-     * See also get_buffer_size which is for a particular stream.
+     * 0 if one of the parameters is not supported
      */
     size_t (*get_input_buffer_size)(const struct audio_hw_device *dev,
-                                    const struct audio_config *config);
+                                    uint32_t sample_rate, int format,
+                                    int channel_count);
 
     /** This method creates and opens the audio hardware output stream */
-    int (*open_output_stream)(struct audio_hw_device *dev,
-                              audio_io_handle_t handle,
-                              audio_devices_t devices,
-                              audio_output_flags_t flags,
-                              struct audio_config *config,
-                              struct audio_stream_out **stream_out);
+    int (*open_output_stream)(struct audio_hw_device *dev, uint32_t devices,
+                              int *format, uint32_t *channels,
+                              uint32_t *sample_rate,
+                              struct audio_stream_out **out);
 
     void (*close_output_stream)(struct audio_hw_device *dev,
-                                struct audio_stream_out* stream_out);
+                                struct audio_stream_out* out);
 
     /** This method creates and opens the audio hardware input stream */
-    int (*open_input_stream)(struct audio_hw_device *dev,
-                             audio_io_handle_t handle,
-                             audio_devices_t devices,
-                             struct audio_config *config,
+    int (*open_input_stream)(struct audio_hw_device *dev, uint32_t devices,
+                             int *format, uint32_t *channels,
+                             uint32_t *sample_rate,
+                             audio_in_acoustics_t acoustics,
                              struct audio_stream_in **stream_in);
 
     void (*close_input_stream)(struct audio_hw_device *dev,
-                               struct audio_stream_in *stream_in);
+                               struct audio_stream_in *in);
 
     /** This method dumps the state of the audio hardware */
     int (*dump)(const struct audio_hw_device *dev, int fd);
-
-    /**
-     * set the audio mute status for all audio activities.  If any value other
-     * than 0 is returned, the software mixer will emulate this capability.
-     */
-    int (*set_master_mute)(struct audio_hw_device *dev, bool mute);
-
-    /**
-     * Get the current master mute status for the HAL, if the HAL supports
-     * master mute control.  AudioFlinger will query this value from the primary
-     * audio HAL when the service starts and use the value for setting the
-     * initial master mute across all HALs.  HALs which do not support this
-     * method may leave it set to NULL.
-     */
-    int (*get_master_mute)(struct audio_hw_device *dev, bool *mute);
 };
 typedef struct audio_hw_device audio_hw_device_t;
 

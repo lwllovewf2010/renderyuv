@@ -96,7 +96,7 @@
 /*
  * Define this if you have <termio.h>
  */
-#define  HAVE_TERMIO_H 1
+#define  HAVE_TERMIO_H
 
 /*
  * Define this if you have <sys/sendfile.h>
@@ -111,7 +111,7 @@
 /*
  * Define this if you have sys/uio.h
  */
-#define  HAVE_SYS_UIO_H 1
+#define  HAVE_SYS_UIO_H
 
 /*
  * Define this if your platforms implements symbolic links
@@ -122,7 +122,7 @@
 /*
  * Define this if we have localtime_r().
  */
-/* #define HAVE_LOCALTIME_R 1 */
+/* #define HAVE_LOCALTIME_R */
 
 /*
  * Define this if we have gethostbyname_r().
@@ -184,6 +184,13 @@
  * non-functional.
  */
 #define HAVE_BACKTRACE 0
+
+/*
+ * Defined if we have the dladdr() call for retrieving the symbol associated
+ * with a memory address.  If not defined, stack crawls will not have symbolic
+ * information.
+ */
+#define HAVE_DLADDR 1
 
 /*
  * Defined if we have the cxxabi.h header for demangling C++ symbols.  If
@@ -353,15 +360,5 @@
  * Define if printf() supports %zd for size_t arguments
  */
 #define HAVE_PRINTF_ZD 1
-
-/*
- * Define to 1 if <stdlib.h> provides qsort_r() with a BSD style function prototype.
- */
-#define HAVE_BSD_QSORT_R 0
-
-/*
- * Define to 1 if <stdlib.h> provides qsort_r() with a GNU style function prototype.
- */
-#define HAVE_GNU_QSORT_R 0
 
 #endif /* _ANDROID_CONFIG_H */

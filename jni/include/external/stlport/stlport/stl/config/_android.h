@@ -54,12 +54,25 @@
 #define _STLP_NO_VENDOR_MATH_L 1
 
 // Define how to include our native headers.
+#ifdef BUILD_WITH_NDK
+
+#define _STLP_NATIVE_HEADER(header) <usr/include/header>
+#define _STLP_NATIVE_C_HEADER(header) <../include/header>
+#define _STLP_NATIVE_CPP_C_HEADER(header) <usr/include/header>
+#define _STLP_NATIVE_CPP_RUNTIME_HEADER(header) <usr/include/header>
+#define _STLP_NATIVE_OLD_STREAMS_HEADER(header) <usr/include/header>
+#define _STLP_NATIVE_CPP_RUNTIME_HEADER(header) <usr/include/header>
+
+#else
+
 #define _STLP_NATIVE_HEADER(header) <libstdc++/include/header>
 #define _STLP_NATIVE_C_HEADER(header) <../include/header>
 #define _STLP_NATIVE_CPP_C_HEADER(header) <libstdc++/include/header>
 #define _STLP_NATIVE_CPP_RUNTIME_HEADER(header) <libstdc++/include/header>
 #define _STLP_NATIVE_OLD_STREAMS_HEADER(header) <libstdc++/include/header>
 #define _STLP_NATIVE_CPP_RUNTIME_HEADER(header) <libstdc++/include/header>
+
+#endif
 
 // Include most of the gcc settings.
 #include <stl/config/_gcc.h>
@@ -73,6 +86,11 @@
 
 // Android does have include_next but it doesn't work well in our build system.
 #undef _STLP_HAS_INCLUDE_NEXT
+
+// Android X86 target uses GCC 4.2.1 which apparently has this problem
+#if defined(__i386__)
+#   define _STLP_CONST_CONSTRUCTOR_BUG 1
+#endif
 
 #if !defined(__BUILDING_STLPORT)
 // Turn off container extension which fails correct, standard-compliant code.
