@@ -50,7 +50,6 @@ nativeShowYUV(JNIEnv *env, jobject thiz,jbyteArray yuvData,jint width,jint heigh
     jint len = env->GetArrayLength(yuvData);  
     ALOGE("len = %d",len);  
     jbyte *byteBuf = env->GetByteArrayElements(yuvData, 0);  
-    render(byteBuf,len,surface,width,height);  
 }  
 static JNINativeMethod gMethods[] = {  
     {"nativeTest",                  "()V",                              (void *)nativeTest},  
@@ -70,6 +69,7 @@ static int register_com_example_myyuvviewer(JNIEnv *env)
   
 jint JNI_OnLoad(JavaVM* vm, void* reserved)  
 {  
+    return JNI_VERSION_1_4;  
     ALOGE("[%s]%d",__FILE__,__LINE__);  
     JNIEnv* env = NULL;  
     jint result = -1;  

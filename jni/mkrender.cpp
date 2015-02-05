@@ -17,8 +17,8 @@ static int ALIGN(int x, int y) {
 } 
 
 using namespace android;
-void render(  
-        const void *data, size_t size, ANativeWindow* nativeWindow,int width,int height) {  
+void render(void*y, void*u, void*v, int ylen, int ulen, int vlen, size_t size, ANativeWindow* nativeWindow,int width,int height) {  
+
     ANativeWindow*  mNativeWindow = nativeWindow;  
     int err;  
     int mCropWidth = width;  
@@ -65,11 +65,17 @@ void render(
                 buf->handle, GRALLOC_USAGE_SW_WRITE_OFTEN, bounds, &dst);//dst就指向图形缓冲区首地址  
   
     if (true){  
+/*
         size_t dst_y_size = buf->stride * buf->height;  
         size_t dst_c_stride = ALIGN(buf->stride / 2, 16);//1行v/u的大小  
         size_t dst_c_size = dst_c_stride * buf->height / 2;//u/v的大小  
-          
-        memcpy(dst, data, dst_y_size + dst_c_size*2);//将yuv数据copy到图形缓冲区  
+*/
+//        ALOGW("mamk memcpy %d %d %d", dst, data, dst_y_size + dst_c_size*2);            
+     memcpy(dst, y, ylen);
+     memcpy((uint8_t*)(dst)+ylen, u, ulen);
+     memcpy((uint8_t*)(dst)+ylen+ulen, v, vlen);
+
+//        memcpy(dst, data, size);//将yuv数据copy到图形缓冲区  
     }  
   
     mapper.unlock(buf->handle);  
